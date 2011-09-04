@@ -1,8 +1,26 @@
 require File.join(File.dirname(__FILE__), "mock_response")
+require 'cramp'
 
 module Cramp
   
+  # Monkey-patch so that even if there is an exception raised in on_start or in on_finish
+  # the exception dump is rendered so that:
+  # - you can match against it in your spec,
+  # - get method doesn't time out waiting for anything to be rendered (may not be true for on_finish).
+  #
+  class Action
+    alias :old_handle_exception :handle_exception
+    def handle_exception(exception)
+      if @_state != :init
+        handler = ExceptionHandler.new(@env, exception)
+        render handler.pretty
+      end
+      old_handle_exception(exception)
+    end
+  end
+  
   # Usage:
+  #
   # describe MyAction, :cramp => true do
   #   def app
   #     MyAction
@@ -12,27 +30,67 @@ module Cramp
   #     get("/").should respond_with :status => :ok, :body => "Hello, world!"
   #   end
   # end
+  #
   shared_context "given a Cramp application", :cramp => true do
-    before(:all) do 
-      @request = Rack::MockRequest.new(app)
-    end
+
+    # In your describe block using :cramp => true, define a method called 'app' returning an async Rack application. 
+    # Example:
+    #
+    #   def app
+    #     HelloWorldAction
+    #   end
     
-    def get(path, options = {}, &block)
+    # Request helper method.
+    #
+    def request(method, path, options = {}, &block)
+      raise "Unsupported request method" unless [:get, :post, :delete, :put].include?(method)
       if block
-        async_request(:get, path, options, &block)
+        async_request(method, path, options, &block)
       else
-        sync_request(:get, path, options)
+        sync_request(method, path, options)
       end
+    end      
+    
+    # GET helper method.
+    #
+    def get(path, options = {}, &block)
+      request(:get, path, options, &block)
+    end
+
+    # POST helper method.
+    #
+    def post(path, options = {}, &block)
+      request(:post, path, options, &block)
+    end
+
+    # DELETE helper method.
+    #
+    def delete(path, options = {}, &block)
+      request(:delete, path, options, &block)
+    end
+
+    # PUT helper method.
+    #
+    def put(path, options = {}, &block)
+      request(:put, path, options, &block)
     end
     
+    # Use it if using a block version of a request helper method.
+    # See spec/examples/low_level_spec.rb for examples.
+    #
     def stop
       EM.stop
     end
     
+    # You can change the default timeout by overriding this method.
+    #
     def default_timeout
       3
     end
     
+    # respond_to RSpec matcher.
+    # See spec/examples for sample usage.
+    #
     RSpec::Matchers.define :respond_with do |options = {}|
       match do |response|
         @actual_response = response
@@ -49,8 +107,12 @@ module Cramp
     
     private
     
+    before(:all) do 
+      @request = Rack::MockRequest.new(app)
+    end
+    
     def async_request(method, path, options, &block)
-      callback = build_response(block)
+      callback = parse_response(block)
       headers = {'async.callback' => callback}
       timeout_secs = options.delete(:timeout) || default_timeout
       begin
@@ -70,7 +132,7 @@ module Cramp
     def sync_request(method, path, options)
       max_chunks = options.delete(:max_chunks) || 1
       response = nil
-      async_request(:get, path, options) do |result|
+      async_request(method, path, options) do |result|
         if result.status.between?(200, 299)
           result.read_body(max_chunks)
         else
@@ -81,7 +143,7 @@ module Cramp
       response
     end
     
-    def build_response(block)
+    def parse_response(block)
       proc do |result|
         response = MockResponse.new(result)
         block.call(response)

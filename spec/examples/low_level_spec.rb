@@ -1,5 +1,5 @@
-require File.join(File.dirname(__FILE__), 'sample_actions')
-require File.join(File.dirname(__FILE__), '../../lib/rspec_cramp')
+require File.join(File.dirname(__FILE__), "../spec_helper")
+require File.join(File.dirname(__FILE__), "sample_actions")
 
 describe HelloWorld, :cramp => true do
 	def app

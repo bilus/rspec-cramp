@@ -1,8 +1,4 @@
-require "rubygems"
-require File.join(File.dirname(__FILE__), "../lib/rspec_cramp")
-require "cramp"
-require "rspec"
-require "http_router"
+require File.join(File.dirname(__FILE__), "spec_helper")
 
 module Cramp
   
@@ -38,9 +34,29 @@ module Cramp
       end
     end
     
+    
+    class RaiseBeforeStart < Cramp::Action
+      before_start :raise_error
+      def raise_error
+        raise "Error in before_start"
+      end
+    end
+
     class RaiseOnStart < Cramp::Action
-      def start
-        raise "an error"
+      on_start :raise_error
+      def raise_error
+        raise "Error in on_start"
+      end
+    end
+
+    class RaiseOnFinish < Cramp::Action
+      on_start :just_finish
+      on_finish :raise_error
+      def just_finish
+        finish
+      end
+      def raise_error
+        raise "Error in on_finish"
       end
     end
     
@@ -69,8 +85,7 @@ module Cramp
       end
     end
     
-    # Entry point
-    def app
+    def routes
       HttpRouter.new do
         add('/200').to SuccessfulResponse
         add('/hello_world').to HelloWorldResponse
@@ -78,12 +93,22 @@ module Cramp
         add('/500').to ErrorResponse
         add('/no_response').to NoResponse
         add('/custom_header').to CustomHeaders
+        add('/raise_before_start').to RaiseBeforeStart
         add('/raise_on_start').to RaiseOnStart
+        add('/raise_on_finish').to RaiseOnFinish
         add('/sse').to SseAction
+        add('/get_only').request_method('GET').to SuccessfulResponse
+        add('/post_only').request_method('POST').to SuccessfulResponse
+        add('/put_only').request_method('PUT').to SuccessfulResponse
+        add('/delete_only').request_method('DELETE').to SuccessfulResponse
       end
     end
     
     describe "'respond_with' matcher", :cramp => true do
+      def app
+        routes
+      end
+
       shared_examples_for "async_request" do |method|
 
         describe "timeout" do
@@ -230,20 +255,82 @@ module Cramp
           end
         end
         
-        it "should correctly handle exception in the callbacks"
-        it "should correctly handle exception raised in on_start"
+        it "should correctly handle exception in the callbacks" do
+          send(method, "/raise_on_start").should respond_with :status => 200  # Unfortunately, the headers have been already sent.
+        end
+        
+        describe "when an action raises an exception" do
+          it "should handle error in before_start handler" do
+            get("/raise_before_start").should respond_with :status => 500
+          end
+
+          it "should handle error in on_start handler" do
+            # Headers were already sent by the time the exception was raised.
+            get("/raise_on_start").should respond_with :body => /.*Error in on_start.*/, :status => 200 
+          end
+
+          it "should handle error in on_finish handler" do
+            # Headers were already sent by the time the exception was raised.
+            get("/raise_on_finish").should respond_with :body => /.*Error in on_finish.*/, :status => 200 
+          end
+        end
         
         it "should support custom request headers"
 
       end
-          
+      
+      # TODO Add method-specific paths to http routes and write specs.
       describe "GET request" do
         it_should_behave_like "async_request", :get 
+        
+        it "should be able to access paths accessible only with GET" do
+          get("/get_only").should respond_with :status => :ok
+        end
+        it "should not be able to access paths non-accessible with GET" do
+          get("/post_only").should respond_with :status => 405
+        end
+      end
+
+      describe "POST request" do
+        it_should_behave_like "async_request", :post 
+
+        it "should be able to access paths accessible only with POST" do
+          post("/post_only").should respond_with :status => :ok
+        end
+        it "should not be able to access paths non-accessible with POST" do
+          post("/get_only").should respond_with :status => 405
+        end
+      end
+      
+      describe "DELETE request" do
+        it_should_behave_like "async_request", :delete
+
+        it "should be able to access paths accessible only with DELETE" do
+          delete("/delete_only").should respond_with :status => :ok
+        end
+        it "should not be able to access paths non-accessible with DELETE" do
+          delete("/post_only").should respond_with :status => 405
+        end
+      end
+
+      describe "PUT request" do
+        it_should_behave_like "async_request", :put
+
+        it "should be able to access paths accessible only with PUT" do
+          put("/put_only").should respond_with :status => :ok
+        end
+        it "should not be able to access paths non-accessible with PUT" do
+          put("/post_only").should respond_with :status => 405
+        end
       end
     end
   
     # FIXME Better failure message for response matcher.
     describe "'be_matching' matcher", :cramp => true do
+      def app
+        routes
+      end
+      
       # TODO Only basic matching here because respond_with matcher uses the same method. 
       # It should be the other way around, i.e. all the tests should be here but I hate to rewrite the specs now.
       # Anyway, we need more tests here.
@@ -271,6 +358,11 @@ module Cramp
           response[-1].should be_a Cramp::Body
           stop
         end
+      end
+      it "should handle exceptions in block" do
+        lambda { get("/404") do |response|
+          raise "this is an error"
+        end }.should raise_error
       end
       
       describe "improper body access" do
