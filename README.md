@@ -20,7 +20,7 @@ Take a look at [spec/examples/](https://github.com/bilus/rspec-cramp/tree/master
 Note
 ----
 
-This work is based on [Naik Pratik's code](https://github.com/lifo/cramp/blob/master/lib/cramp/test_case.rb) and writing specs in a similar fashion is still supported though there is a helper for loading the body and a response matcher and some accessors to make your life easier.
+This work is based on [Pratik Naik's code](https://github.com/lifo/cramp/blob/master/lib/cramp/test_case.rb) and writing specs in a similar fashion is still supported though there is a helper for loading the body and a response matcher and some accessors to make your life easier.
 
 	describe MyCrampAction, :cramp => true do
 		def app
