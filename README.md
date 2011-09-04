@@ -17,7 +17,10 @@ The matcher is fairly flexible and also works with multipart responses (more tha
 
 Take a look at [spec/examples/](https://github.com/bilus/rspec-cramp/tree/master/spec/examples)
 
-This work is based on [Naik Pratik's code](https://github.com/lifo/cramp/blob/master/lib/cramp/test_case.rb) and writing specs in a similar fashion is still supported though there is a helper for loading the body and a response matcher.
+Note
+----
+
+This work is based on [Naik Pratik's code](https://github.com/lifo/cramp/blob/master/lib/cramp/test_case.rb) and writing specs in a similar fashion is still supported though there is a helper for loading the body and a response matcher and some accessors to make your life easier.
 
 	describe MyCrampAction, :cramp => true do
 		def app
@@ -40,7 +43,8 @@ This work is based on [Naik Pratik's code](https://github.com/lifo/cramp/blob/ma
 			end
 		end
 	end
- 
+
+In general, I recommend using the 'respond_with' matcher whenever possible; because it hides some implementation details (for good or bad), it makes the specs more readable.
 
 Project status
 --------------	
