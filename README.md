@@ -3,16 +3,36 @@ Rspec-cramp is a simple library to make it easier to write specs for [cramp](htt
 Quick start
 -----------
 
-	describe MyCrampAction, :cramp => true do
-		def app
-			MyCrampAction
-		end
-		it "should respond to a GET request" do
-			get("/").should respond_with :status => :ok, :body => "Hello, world!"
-		end
+	describe HelloWorld, :cramp => true do
+	  def app
+	    HelloWorld
+	  end
+
+	  it "should respond to a GET request" do
+	    # Various ways to match a response code.
+	    get("/").should respond_with :status => :ok         # Matches responses from 200 to 299.
+	    get("/").should respond_with :status => 200         # Matches only 200.
+	    get("/").should respond_with :status => "200"       # Same as above.
+	    get("/").should respond_with :status => /^2.*/      # Matches response codes starting with 2.
+	    get("/").should_not respond_with :status => :error  # Matches any HTTP error.
+	  end
+
+	  it "should respond with text starting with 'Hello'" do
+	    get("/").should respond_with :body => /^Hello.*/
+	  end
+
+	  it "should respond with 'Hello, world!'" do
+	    get("/").should respond_with :body => "Hello, world!"
+	  end
+  
+	  it "should respond with html" do
+	    get("/").should respond_with :header => {"Content-Type" => "text/html"}
+	    get("/").should_not respond_with :header => {"Content-Type" => "text/plain"}
+	    get("/").should_not respond_with :header => {"Unexpected-Header" => /.*/}
+	  end
 	end
 	
-The matcher is fairly flexible and also works with multipart responses (more than one `Cramp::Action.render`), SSE and so on. I'll create more examples and docs but for the time being, pls. take a look at the code.
+The matcher is fairly flexible, supports regular expressions and also works with multipart responses (more than one `Cramp::Action.render`), SSE and so on. I'll create more examples and docs but for the time being, pls. take a look at the code.
 
 **DISCLAIMER:** I haven't done any work with WebSockets yet so if there is anyone willing to add support for WebSockets, please [tweet me](http://twitter.com/#!/MartinBilski)
 

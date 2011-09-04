@@ -55,7 +55,7 @@ module Cramp
     
     def last_failure_message_for_should
       # TODO Better failure message showing the specific mismatches that made it fail.
-      "expected #{@failure_info[:expected]} in #{@failure_info[:what].to_s} but got: \"#{@failure_info[:actual]}\""
+      "expected #{@failure_info[:expected]} in #{@failure_info[:what].to_s} but got: #{@failure_info[:actual]}"
     end
     def last_failure_message_for_should_not
       # TODO Better failure message showing the specific successful matches that made it fail.
@@ -98,10 +98,22 @@ module Cramp
       matching_response_element?(:status, @status, resolve_status(expected_status))
     end
     
-    def matching_headers?(expected_header)
-      expected_header.nil? || expected_header.find do |ek, ev| 
+    def matching_header_values?(expected_header)
+      expected_header.find do |ek, ev| 
         @headers.find { |ak, av| ak == ek && !matching_response_element?(:header, av, ev) } != nil
-      end == nil 
+      end == nil
+    end
+    
+    def matching_header_keys?(expected_header)
+      is_match = @headers.keys.find {|actual| expected_header.keys.include?(actual) } != nil
+      @failure_info = is_match ? {} : {:what => :headers, :actual => @headers.keys.inspect, :expected => expected_header.keys.inspect}
+      
+      is_match
+    end
+    
+    def matching_headers?(expected_header)
+      expected_header.nil? || 
+        (matching_header_keys?(expected_header) && matching_header_values?(expected_header))
     end
     
     def matching_body?(expected_body)

@@ -168,8 +168,8 @@ module Cramp
           it "should not match if value does not match" do
             send(method, "/custom_header").should_not respond_with :header => {"Extra-Header" => "1234"}
           end
-          it "should not match iff both expected headers do not match" do
-            send(method, "/custom_header").should_not respond_with :header => {"Extra-Header" => "1234", "Non-Existent-One" => "QWERTY"}
+          it "should not match iff the header isn't there" do
+            send(method, "/custom_header").should_not respond_with :header => {"Non-Existent-One" => "QWERTY"}
           end
         end
         
@@ -183,8 +183,8 @@ module Cramp
           it "should not match if value does not match" do
             send(method, "/custom_header").should_not respond_with :header => {"Extra-Header" => /^1234$/}
           end
-          it "should not match iff both expected headers do not match" do
-            send(method, "/custom_header").should_not respond_with :header => {"Extra-Header" => /^1234$/, "Non-Existent-One" => /^QWERTY$/}
+          it "should not match iff the header isn't there" do
+            send(method, "/custom_header").should_not respond_with :header => {"Non-Existent-One" => /^QWERTY$/}
           end
         end
         
