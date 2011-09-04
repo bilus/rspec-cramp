@@ -38,6 +38,16 @@ The matcher is fairly flexible, supports regular expressions and also works with
 
 More examples: [spec/examples/](https://github.com/bilus/rspec-cramp/tree/master/spec/examples)
 
+Project status
+--------------	
+
+**IMPORTANT:** This is work in progress. I haven't created a gem yet. 
+
+1. There are still pending specs I'll take care of soon (esp. passing extra headers).
+2. I extracted the code from one of my projects and wrote the matchers from scratch test-first. Still, after the weekend I plan to actually use it to replace the 'legacy' matchers in my project; this will probably uncover some bugs.
+
+If you have any comments regarding the code as it is now (I know it's a bit messy), please feel free to tweet [@MartinBilski](http://twitter.com/#!/MartinBilski)
+
 Notes
 ----
 
@@ -74,13 +84,3 @@ Notes
 		end  
 	
 	In general, I recommend using the 'respond_with' matcher whenever possible; I think it makes the specs more readable because it hides some gory details (for good or bad). 
-
-Project status
---------------	
-
-*Important:* This is work in progress. I haven't created a gem yet. 
-
-1. There are still pending specs I'll take care of soon (esp. passing extra headers).
-2. I extracted the code from one of my projects and wrote the matchers from scratch test-first. Still, after the weekend I plan to actually use it to replace the 'legacy' matchers in my project; this will probably uncover some bugs.
-
-If you have any comments regarding the code as it is now (I know it's a bit messy), please feel free to tweet [@MartinBilski](http://twitter.com/#!/MartinBilski)
