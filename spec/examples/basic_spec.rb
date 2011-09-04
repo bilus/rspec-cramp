@@ -1,12 +1,5 @@
-require 'cramp'
+require File.join(File.dirname(__FILE__), 'sample_actions')
 require File.join(File.dirname(__FILE__), '../../lib/rspec_cramp')
-
-class HelloWorld < Cramp::Action
-  def start
-    render "Hello, world!"
-    finish
-  end
-end
 
 describe HelloWorld, :cramp => true do
   def app
