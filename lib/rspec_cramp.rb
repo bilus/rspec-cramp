@@ -42,6 +42,9 @@ module Cramp
       failure_message_for_should do
         @actual_response.last_failure_message_for_should
       end
+      failure_message_for_should_not do
+        @actual_response.last_failure_message_for_should_not
+      end
     end
     
     private

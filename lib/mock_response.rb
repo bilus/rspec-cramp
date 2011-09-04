@@ -54,7 +54,12 @@ module Cramp
     end
     
     def last_failure_message_for_should
+      # TODO Better failure message showing the specific mismatches that made it fail.
       "expected #{@failure_info[:expected]} in #{@failure_info[:what].to_s} but got: \"#{@failure_info[:actual]}\""
+    end
+    def last_failure_message_for_should_not
+      # TODO Better failure message showing the specific successful matches that made it fail.
+      "expected response not to match the conditions but got: #{[@status, @headers, @body].inspect}"
     end
     
     private
