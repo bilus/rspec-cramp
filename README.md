@@ -32,11 +32,9 @@ Quick start
 	  end
 	end
 	
-The matcher is fairly flexible, supports regular expressions and also works with multipart responses (more than one `Cramp::Action.render`), SSE and so on. I'll create more examples and docs but for the time being, pls. take a look at the code.
+The matcher is fairly flexible, supports regular expressions and also works with multipart responses (more than one `Cramp::Action.render`), SSE and so on. I'll create more examples and docs but for the time being, pls. take a look at the code and [examples](https://github.com/bilus/rspec-cramp/tree/master/spec/examples).
 
 **DISCLAIMER:** I haven't done any work with WebSockets yet so if there is anyone willing to add support for WebSockets, please [tweet me](http://twitter.com/#!/MartinBilski)
-
-More examples: [spec/examples/](https://github.com/bilus/rspec-cramp/tree/master/spec/examples)
 
 Project status
 --------------	
