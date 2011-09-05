@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.platform = Gem::Platform::RUBY
   s.name = 'rspec-cramp'
-  s.version = '0.1.0'
+  s.version = '0.1.1'
   s.summary = 'RSpec helpers for Cramp.'
   s.description = 'RSpec extension library for Cramp.'
 

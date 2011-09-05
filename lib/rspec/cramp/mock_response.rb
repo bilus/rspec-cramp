@@ -77,6 +77,8 @@ module RSpec
           actual.to_i == expected
         elsif expected.is_a? String
           actual.to_s == expected
+        elsif expected.is_a? Proc
+          expected.call(actual)
         else
           raise "Unsupported type"
         end
@@ -115,8 +117,13 @@ module RSpec
       end
 
       def matching_headers?(expected_header)
-        expected_header.nil? || 
-        (matching_header_keys?(expected_header) && matching_header_values?(expected_header))
+        if expected_header.nil?
+          true
+        elsif expected_header.is_a? Proc
+          matching_response_element?(:headers, @headers, expected_header)
+        else
+          matching_header_keys?(expected_header) && matching_header_values?(expected_header)
+        end
       end
 
       def matching_body?(expected_body)
@@ -125,10 +132,15 @@ module RSpec
       end
 
       def matching_chunks?(expected_chunks)
-        expected_chunks.nil? || (@body.is_a?(Array) && 
-        @body.zip(expected_chunks).find do |actual, expected|
-          !matching_response_element?(:chunks, actual, expected)
-        end.nil?)
+        if expected_chunks.nil? 
+          true
+        elsif expected_chunks.is_a? Proc
+          matching_response_element?(:chunks, @body, expected_chunks)
+        else
+          (@body.is_a?(Array) && @body.zip(expected_chunks).find do |actual, expected|
+            !matching_response_element?(:chunks, actual, expected)
+          end.nil?)
+        end
       end
     end
   end

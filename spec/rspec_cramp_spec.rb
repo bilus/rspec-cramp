@@ -160,7 +160,6 @@ module Cramp
           end
         end
         
-        # TODO Rewrite the repetitive code below using data-based spec generation.
         describe "exact match on response status" do
           it "should match successful response" do
             send(method, "/200").should respond_with :status => 200
@@ -194,6 +193,15 @@ module Cramp
           end
         end
         
+        describe "lambda match on response status" do
+          it "should match when true" do
+            send(method, "/200").should respond_with :status => lambda {|status| status == 200}
+          end
+          it "should not match when false" do
+            send(method, "/200").should_not respond_with :status => lambda {|status| status == 500}
+          end
+        end
+        
         describe "exact match on response header values" do
           it "should match with one expected header" do
             send(method, "/custom_header").should respond_with :headers => {"Extra-Header" => "ABCD"}
@@ -224,6 +232,15 @@ module Cramp
           end
         end
 
+        describe "lambda match on response header values" do
+          it "should match when true" do
+            send(method, "/custom_header").should respond_with :headers => {"Extra-Header" => lambda {|value| value == "ABCD"}}
+          end
+          it "should not match when false" do
+            send(method, "/custom_header").should_not respond_with :headers => {"Extra-Header" => lambda {|value| value == "WRONG"}}
+          end
+        end
+
         describe "regex match on response header fields" do
           it "should match with one expected header" do
             send(method, "/custom_header").should respond_with :headers => {/Extra\-Header/i => /^ABCD$/}
@@ -236,6 +253,21 @@ module Cramp
           end
           it "should not match iff the header isn't there" do
             send(method, "/custom_header").should_not respond_with :headers => {/Non\-Existent\-One/i => /^QWERTY$/}
+          end
+        end  
+        
+        describe "lambda match on entire header " do
+          it "should match when true" do
+            match_headers = lambda do |headers|
+              headers.find {|(k, v)| k == "Extra-Header" && v == "ABCD"}
+            end
+            send(method, "/custom_header").should respond_with :headers => match_headers
+          end
+          it "should not match when false" do
+            match_headers = lambda do |headers|
+              headers.find {|(k, v)| k == "Non-Existent-One" && v == "QWERTY"}
+            end
+            send(method, "/custom_header").should_not respond_with :headers => match_headers
           end
         end
         
@@ -258,6 +290,15 @@ module Cramp
           it "should match the body" do
             send(method, "/hello_world").should respond_with :body => /.*Hello.*/
             send(method, "/hello_world").should_not respond_with :body => /.*incorrect.*/
+          end
+        end
+   
+        describe "lambda match on response body" do
+          it "should match when true" do
+            send(method, "/hello_world").should respond_with :body => lambda {|body| body =~ /.*Hello.*/}
+          end
+          it "should not match when false" do
+            send(method, "/hello_world").should_not respond_with :body => lambda {|body| body =~ /.*incorrect.*/}
           end
         end
    
@@ -288,6 +329,20 @@ module Cramp
             send(method, "/multipart", :max_chunks => 2).should_not respond_with :chunks => [/whatever1/, /whatever2/]
           end
         end
+        
+        describe "lambda match on response body chunks" do
+          it "should match when true" do
+            send(method, "/multipart", :max_chunks => 2).should respond_with(:chunks => lambda do |chunks| 
+              chunks[0] =~ /part1/ && chunks[1] =~ /part2/
+            end)
+          end
+          it "should not match when false" do
+            send(method, "/multipart", :max_chunks => 2).should_not respond_with(:chunks => lambda do |chunks| 
+              chunks[0] =~ /whatever1/ || chunks[1] =~ /whatever2/
+            end)
+          end
+        end
+
         
         describe "multiple conditions" do
           it "should match on status and body" do
@@ -334,9 +389,16 @@ module Cramp
         it "should support request params" do
           get("/request_params", :params => {:text => "Hello, world!"}).should respond_with :body => "Hello, world!"
         end
+        
+        it "should pass body chunks to the block" do
+          actual_chunks = []
+          get("/sse", :max_chunks => 2).should respond_with(:chunks => lambda {|chunks| actual_chunks = chunks; true})
+          actual_chunks.should have(2).elements
+          actual_chunks[0].should include "Hello 1"
+          actual_chunks[1].should include "Hello 2"
+        end
       end
       
-      # TODO Add method-specific paths to http routes and write specs.
       describe "GET request" do
         it_should_behave_like "async_request", :get 
         
@@ -388,9 +450,8 @@ module Cramp
         routes
       end
       
-      # TODO Only basic matching here because respond_with matcher uses the same method. 
-      # It should be the other way around, i.e. all the tests should be here but I hate to rewrite the specs now.
-      # Anyway, we need more tests here.
+      # Note: Only basic specs here because respond_with matcher uses the same code and is extensively tested.
+       
       it "should support expectations on response status" do
         get("/200") do |response|
           response.should be_matching :status => 200
