@@ -4,21 +4,24 @@ module Cramp
   
   describe "rspec-cramp" do
     class SuccessfulResponse < Cramp::Action
-      def start
+      on_start :render_and_finish
+      def render_and_finish
         render "ok"
         finish
       end
     end
 
     class HelloWorldResponse < Cramp::Action
-      def start
+      on_start :render_and_finish
+      def render_and_finish
         render "Hello, world"
         finish
       end
     end
     
     class MultipartResponse < Cramp::Action
-      def start
+      on_start :render_and_finish
+      def render_and_finish
         render "part1"
         render "part2"
         finish
@@ -26,10 +29,11 @@ module Cramp
     end
 
     class ErrorResponse < Cramp::Action
+      on_start :just_finish
       def respond_with
         [500, {'Content-Type' => 'text/html'}]
       end
-      def start
+      def just_finish
         finish
       end
     end
@@ -61,15 +65,17 @@ module Cramp
     end
     
     class NoResponse < Cramp::Action
-      def start
+      on_start :noop
+      def noop
       end
     end
     
     class CustomHeaders < Cramp::Action
+      on_start :ok_and_finish
       def respond_with
         [200, {'Extra-Header' => 'ABCD', 'Another-One' => 'QWERTY'}]
       end
-      def start
+      def ok_and_finish
         render "ok"
         finish
       end
@@ -84,6 +90,22 @@ module Cramp
         @num += 1
       end
     end
+    
+    class RequestHeaders < Cramp::Action
+      on_start :render_request_headers
+      def render_request_headers
+        response = http_headers.inject("Request headers:\n") {|acc, (k,v)| acc << "#{k}: #{v}\n"; acc}
+        render response
+        finish
+      end
+      
+      private
+      
+      def http_headers
+        @env.inject({}){|acc, (k,v)| acc[$1.upcase] = v if k =~ /^http_(.*)/i; acc}
+      end
+    end
+      
     
     def routes
       HttpRouter.new do
@@ -101,6 +123,7 @@ module Cramp
         add('/post_only').request_method('POST').to SuccessfulResponse
         add('/put_only').request_method('PUT').to SuccessfulResponse
         add('/delete_only').request_method('DELETE').to SuccessfulResponse
+        add('/request_headers').to RequestHeaders
       end
     end
     
@@ -162,33 +185,48 @@ module Cramp
           end
         end
         
-        describe "exact match on response headers" do
+        describe "exact match on response header values" do
           it "should match with one expected header" do
-            send(method, "/custom_header").should respond_with :header => {"Extra-Header" => "ABCD"}
+            send(method, "/custom_header").should respond_with :headers => {"Extra-Header" => "ABCD"}
           end
           it "should match all with two expected headers" do
-            send(method, "/custom_header").should respond_with :header => {"Extra-Header" => "ABCD", "Another-One" => "QWERTY"}
+            send(method, "/custom_header").should respond_with :headers => {"Extra-Header" => "ABCD", "Another-One" => "QWERTY"}
           end
           it "should not match if value does not match" do
-            send(method, "/custom_header").should_not respond_with :header => {"Extra-Header" => "1234"}
+            send(method, "/custom_header").should_not respond_with :headers => {"Extra-Header" => "1234"}
           end
           it "should not match iff the header isn't there" do
-            send(method, "/custom_header").should_not respond_with :header => {"Non-Existent-One" => "QWERTY"}
+            send(method, "/custom_header").should_not respond_with :headers => {"Non-Existent-One" => "QWERTY"}
           end
         end
         
-        describe "regex match on response headers" do
+        describe "regex match on response header values" do
           it "should match with one expected header" do
-            send(method, "/custom_header").should respond_with :header => {"Extra-Header" => /^ABCD$/}
+            send(method, "/custom_header").should respond_with :headers => {"Extra-Header" => /^ABCD$/}
           end
           it "should match all with two expected headers" do
-            send(method, "/custom_header").should respond_with :header => {"Extra-Header" => /^ABCD$/, "Another-One" => /^QWERTY$/}
+            send(method, "/custom_header").should respond_with :headers => {"Extra-Header" => /^ABCD$/, "Another-One" => /^QWERTY$/}
           end
           it "should not match if value does not match" do
-            send(method, "/custom_header").should_not respond_with :header => {"Extra-Header" => /^1234$/}
+            send(method, "/custom_header").should_not respond_with :headers => {"Extra-Header" => /^1234$/}
           end
           it "should not match iff the header isn't there" do
-            send(method, "/custom_header").should_not respond_with :header => {"Non-Existent-One" => /^QWERTY$/}
+            send(method, "/custom_header").should_not respond_with :headers => {"Non-Existent-One" => /^QWERTY$/}
+          end
+        end
+
+        describe "regex match on response header fields" do
+          it "should match with one expected header" do
+            send(method, "/custom_header").should respond_with :headers => {/Extra\-Header/i => /^ABCD$/}
+          end
+          it "should match all with two expected headers" do
+            send(method, "/custom_header").should respond_with :headers => {/Extra\-Header/i => /^ABCD$/, "Another-One" => /^QWERTY$/}
+          end
+          it "should not match if value does not match" do
+            send(method, "/custom_header").should_not respond_with :headers => {/Extra\-Header/i => /^1234$/}
+          end
+          it "should not match iff the header isn't there" do
+            send(method, "/custom_header").should_not respond_with :headers => {/Non\-Existent\-One/i => /^QWERTY$/}
           end
         end
         
@@ -279,7 +317,10 @@ module Cramp
           end
         end
         
-        it "should support custom request headers"
+        it "should support custom request headers" do
+          get("/request_headers", :headers => {"Custom1" => "ABC", "Custom2" => "DEF"}).should respond_with :body => /.*^Custom1: ABC$.*/i
+          get("/request_headers", :headers => {"Custom1" => "ABC", "Custom2" => "DEF"}).should respond_with :body => /.*^Custom2: DEF$.*/i
+        end
 
       end
       

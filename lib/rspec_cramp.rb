@@ -113,7 +113,7 @@ module Cramp
     
     def async_request(method, path, options, &block)
       callback = parse_response(block)
-      headers = {'async.callback' => callback}
+      headers = prepare_http_headers(options.delete(:headers) || {}).merge('async.callback' => callback)
       timeout_secs = options.delete(:timeout) || default_timeout
       begin
         timeout(timeout_secs) do
@@ -148,6 +148,10 @@ module Cramp
         response = MockResponse.new(result)
         block.call(response)
       end
+    end
+    
+    def prepare_http_headers(headers)
+      headers.inject({}) {|acc, (k,v)| acc["HTTP_#{k.upcase.gsub("-", "_")}"] = v; acc}
     end
   end
 end

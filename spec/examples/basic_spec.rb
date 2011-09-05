@@ -24,8 +24,8 @@ describe HelloWorld, :cramp => true do
   end
   
   it "should respond with html" do
-    get("/").should respond_with :header => {"Content-Type" => "text/html"}
-    get("/").should_not respond_with :header => {"Content-Type" => "text/plain"}
-    get("/").should_not respond_with :header => {"Unexpected-Header" => /.*/}
+    get("/").should respond_with :headers => {"Content-Type" => "text/html"}
+    get("/").should_not respond_with :headers => {"Content-Type" => "text/plain"}
+    get("/").should_not respond_with :headers => {"Unexpected-Header" => /.*/}
   end
 end

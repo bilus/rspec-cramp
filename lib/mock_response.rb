@@ -46,7 +46,7 @@ module Cramp
     
     def matching?(match_options)
       expected_status = match_options.delete(:status)
-      expected_header = match_options.delete(:header)
+      expected_header = match_options.delete(:headers)
       expected_body = match_options.delete(:body)
       expected_chunks = match_options.delete(:chunks)
       raise "Unsupported match option" unless match_options.empty?
@@ -101,14 +101,15 @@ module Cramp
     
     def matching_header_values?(expected_header)
       expected_header.find do |ek, ev| 
-        @headers.find { |ak, av| ak == ek && !matching_response_element?(:header, av, ev) } != nil
+        @headers.find { |ak, av| matching_response_element?(:headers, ak, ek) && !matching_response_element?(:headers, av, ev) } != nil
       end == nil
     end
     
     def matching_header_keys?(expected_header)
-      is_match = @headers.keys.find {|actual| expected_header.keys.include?(actual) } != nil
+      is_match = @headers.keys.find do |actual| 
+        expected_header.keys.find {|expected| matching_response_element?(:headers, actual, expected)} != nil 
+      end != nil
       @failure_info = is_match ? {} : {:what => :headers, :actual => @headers.keys.inspect, :expected => expected_header.keys.inspect}
-      
       is_match
     end
     

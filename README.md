@@ -26,9 +26,9 @@ Quick start
 	  end
   
 	  it "should respond with html" do
-	    get("/").should respond_with :header => {"Content-Type" => "text/html"}
-	    get("/").should_not respond_with :header => {"Content-Type" => "text/plain"}
-	    get("/").should_not respond_with :header => {"Unexpected-Header" => /.*/}
+	    get("/").should respond_with :headers => {"Content-Type" => "text/html"}
+	    get("/").should_not respond_with :headers => {"Content-Type" => "text/plain"}
+	    get("/").should_not respond_with :headers => {"Unexpected-Header" => /.*/}
 	  end
 	end
 	
@@ -43,7 +43,7 @@ Project status
 
 **IMPORTANT:** This is work in progress. I haven't created a gem yet. 
 
-1. There are still pending specs I'll take care of soon (esp. passing extra headers).
+1. There are still some things I'll take care of soon (esp. better failure messages).
 2. I extracted the code from one of my projects and rewrote the matchers from scratch test-first. Still, after the weekend I plan to actually use it to replace the 'legacy' matchers in my project; this will probably uncover some bugs and may make me add more functionality.
 
 If you have any comments regarding the code as it is now (I know it's a bit messy), please feel free to tweet [@MartinBilski](http://twitter.com/#!/MartinBilski)

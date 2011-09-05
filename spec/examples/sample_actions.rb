@@ -29,3 +29,14 @@ class ErrorOnFinish < Cramp::Action
     raise "Error in on_finish"
   end
 end
+
+class CustomHeader < Cramp::Action
+  on_start :render_custom_header
+  def respond_with
+    [200, {'Content-Type' => 'text/html', 'Custom-Header' => @env["HTTP_CUSTOM_HEADER"]}]
+  end
+  def render_custom_header
+    render @env["HTTP_CUSTOM_HEADER"]
+    finish
+  end
+end
