@@ -3,6 +3,8 @@ A set of rspec matchers and helpers that make it easier to write specs for [cram
 Quick start
 -----------
 
+	require 'rspec/cramp'
+
 	describe HelloWorld, :cramp => true do
 	  def app
 	    HelloWorld
@@ -39,10 +41,11 @@ The matcher is fairly flexible, supports regular expressions and also works with
 Project status
 --------------	
 
-**IMPORTANT:** This is work in progress. I haven't created a gem yet. 
+**IMPORTANT:** This is work in progress. 
 
-1. There are still some things I'll take care of soon (esp. better failure messages).
-2. I extracted the code from one of my projects and rewrote the matchers from scratch test-first. Still, after the weekend I plan to actually use it to replace the 'legacy' matchers in my project; this will probably uncover some bugs and may make me add more functionality.
+1. I have created a gem and restructured the files 'a bit'. I'll publish the gem soon in its current form. Right now, you can build it using the provided gemspec.
+2. There are still some things I'll take care of soon (esp. better failure messages).
+3. I extracted the code from one of my projects and rewrote the matchers from scratch test-first. Still, after the weekend I plan to actually use it to replace the 'legacy' matchers in my project; this will probably uncover some bugs and may make me add more functionality. *UPDATE: I'm working on it right now.*
 
 If you have any comments regarding the code as it is now (I know it's a bit messy), please feel free to tweet [@MartinBilski](http://twitter.com/#!/MartinBilski)
 
