@@ -49,17 +49,17 @@ If you have any comments regarding the code as it is now (I know it's a bit mess
 Notes
 ----
 
-1. The previous version had a problem with exceptions raised in `on_start` or `on_finish` or with `on_start` that called `finish` without rendering anything because the request helper methods always try to read one body chunk after a successful response (200-299).   
+1. The previous version had a problem handling exceptions raised in `on_start` or `on_finish` or with `on_start` that called `finish` without rendering anything because the request helper methods always try to read one body chunk after a successful response (200-299).   
   
-	Actually, it wasn't a very big deal, the call would simply time out and raise `Timeout::Error` with a special error message hinting at the problem: *execution expired (No render call in action?*.
+	Actually, it wasn't a very big deal, the call would simply time out and raise `Timeout::Error` with a special error message hinting at the problem: *execution expired (No render call in action?)*.
 	
-	In the latest version, I [monkey-patched `Cramp::Action`](https://github.com/bilus/rspec-cramp/tree/master/lib/rspec_cramp.rb) to dump the exception if it occurs in `on_start` or in `on_finish` but responding with "Some error has occurred" or something similar is also an option.
+	The current version, comes with a [monkey-patched `Cramp::Action`](https://github.com/bilus/rspec-cramp/tree/master/lib/rspec_cramp.rb) which now renders the exception info if it is raised in `on_start` or in `on_finish`.  
 	
 	See [this example spec](https://github.com/bilus/rspec-cramp/tree/master/spec/examples/errors_spec.rb) to see error handling in action.
 	
-	I'm definitely open to suggestions, especially how this can be fixed without the cramp surgery. Is the timeout better? Unfortunately, the matcher always loads one chunk of the body on successful response by default.
+	I'm definitely open to suggestions, especially how this can be fixed without the cramp surgery. Is the original timeout-based solution better? Unfortunately, the matcher by default always loads one chunk of response body for a successful response.
 
-2. This work is based on [Pratik Naik's code](https://github.com/lifo/cramp/blob/master/lib/cramp/test_case.rb) and writing specs in a similar fashion is still supported though there is a helper for loading the body and a response matcher and some accessors to make your life easier.  
+2. This work is based on [Pratik Naik's code](https://github.com/lifo/cramp/blob/master/lib/cramp/test_case.rb) and writing specs in a similar fashion is still supported though I added a helper for loading the body and a response matcher and some accessors to make your life easier.  
 
 		describe MyCrampAction, :cramp => true do
 			def app
@@ -67,6 +67,8 @@ Notes
 			end
 			it "should respond to a GET request" do
 				get("/") do |response|
+					puts response.status
+					puts response.headers.inspect
 					response.should be_matching :status => :ok
 					stop # This is important.
 				end
@@ -74,6 +76,7 @@ Notes
 			it "should match the body" do
 				get("/") do |response|
 					response.read_body do
+						puts response.body
 						response.should be_matching :body => "Hello, world!"
 						# Note: no call to stop here.
 					end
@@ -81,4 +84,4 @@ Notes
 			end
 		end  
 	
-	In general, I recommend using the 'respond_with' matcher whenever possible; I think it makes the specs more readable because it hides some gory details (for good or bad). 
+	In general, I recommend using the 'respond_with' matcher whenever possible; I think it makes the specs more readable because it hides some gory details (for good or bad). But they are useful when you're debugging your cramp application if the failure message doesn't include all the details you need.
