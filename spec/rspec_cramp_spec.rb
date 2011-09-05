@@ -108,6 +108,10 @@ module Cramp
       def app
         routes
       end
+      
+      it "should raise error for unsupported match options" do
+        lambda { get("/200").should respond_with :whatever => "ABC" }.should raise_error
+      end
 
       shared_examples_for "async_request" do |method|
 

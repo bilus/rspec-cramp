@@ -49,6 +49,7 @@ module Cramp
       expected_header = match_options.delete(:header)
       expected_body = match_options.delete(:body)
       expected_chunks = match_options.delete(:chunks)
+      raise "Unsupported match option" unless match_options.empty?
       matching_status?(expected_status) && matching_headers?(expected_header) && matching_body?(expected_body) &&
         matching_chunks?(expected_chunks)
     end
