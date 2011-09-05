@@ -3,6 +3,7 @@ require 'cramp'
 
 module Cramp
   
+  # TODO Break out into a separate file extensions/cramp/action.rb
   # Monkey-patch so that even if there is an exception raised in on_start or in on_finish
   # the exception dump is rendered so that:
   # - you can match against it in your spec,
@@ -88,6 +89,7 @@ module Cramp
       3
     end
     
+    # TODO Break out into a separate file lib/matchers/respond_with.rb
     # respond_to RSpec matcher.
     # See spec/examples for sample usage.
     #
@@ -113,7 +115,8 @@ module Cramp
     
     def async_request(method, path, options, &block)
       callback = parse_response(block)
-      headers = prepare_http_headers(options.delete(:headers) || {}).merge('async.callback' => callback)
+      params = options.delete(:params) || {}
+      headers = prepare_http_headers(options.delete(:headers) || {}).merge('async.callback' => callback).merge(:params => params)
       timeout_secs = options.delete(:timeout) || default_timeout
       begin
         timeout(timeout_secs) do

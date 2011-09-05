@@ -16,7 +16,7 @@ describe CustomHeader, :cramp => true do
     get("/", :headers => {"Custom-Header" => "SAMPLE VALUE"}).should respond_with :headers => {"Custom-Header" => "SAMPLE VALUE"}
     get("/", :headers => {"Custom-Header" => "SAMPLE VALUE"}).should respond_with :headers => {"Custom-Header" => /^SAMPLE VALUE$/}
 
-    # Header field names are case insensitive - use regex match:
+    # Header field names are case insensitive - use regex match.
     get("/", :headers => {"Custom-Header" => "SAMPLE VALUE"}).should respond_with :headers => {/Custom\-Header/i => "SAMPLE VALUE"}
 
     # Negative match.

@@ -105,6 +105,14 @@ module Cramp
         @env.inject({}){|acc, (k,v)| acc[$1.upcase] = v if k =~ /^http_(.*)/i; acc}
       end
     end
+    
+    class RequestParams < Cramp::Action
+      on_start :render_and_finish
+      def render_and_finish
+        render params[:text]
+        finish
+      end
+    end
       
     
     def routes
@@ -124,6 +132,7 @@ module Cramp
         add('/put_only').request_method('PUT').to SuccessfulResponse
         add('/delete_only').request_method('DELETE').to SuccessfulResponse
         add('/request_headers').to RequestHeaders
+        add('/request_params').to RequestParams
       end
     end
     
@@ -321,7 +330,10 @@ module Cramp
           get("/request_headers", :headers => {"Custom1" => "ABC", "Custom2" => "DEF"}).should respond_with :body => /.*^Custom1: ABC$.*/i
           get("/request_headers", :headers => {"Custom1" => "ABC", "Custom2" => "DEF"}).should respond_with :body => /.*^Custom2: DEF$.*/i
         end
-
+        
+        it "should support request params" do
+          get("/request_params", :params => {:text => "Hello, world!"}).should respond_with :body => "Hello, world!"
+        end
       end
       
       # TODO Add method-specific paths to http routes and write specs.
