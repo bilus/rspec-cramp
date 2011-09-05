@@ -67,8 +67,8 @@ Notes
 			end
 			it "should respond to a GET request" do
 				get("/") do |response|
-					puts response.status
-					puts response.headers.inspect
+					response.status.should == 200
+					response.headers.should have_key "Content-Type"
 					response.should be_matching :status => :ok
 					stop # This is important.
 				end
@@ -76,7 +76,7 @@ Notes
 			it "should match the body" do
 				get("/") do |response|
 					response.read_body do
-						puts response.body
+						response.body.should include "Hello, world!"  # MockResponse::body returns an Array.
 						response.should be_matching :body => "Hello, world!"
 						# Note: no call to stop here.
 					end
