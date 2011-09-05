@@ -3,7 +3,7 @@ A set of rspec matchers and helpers that make it easier to write specs for [cram
 Quick start
 -----------
 
-	gem install rspec-cramp
+	> gem install rspec-cramp
 	
 
 
