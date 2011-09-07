@@ -7,6 +7,8 @@ RSpec::Matchers.define :respond_with do |options = {}|
     response.matching?(options)
   end
   
+  # TODO Better message for cases such as: specify { get("/").should respond_with :status => :ok }.
+  
   failure_message_for_should do
     @actual_response.last_failure_message_for_should
   end

@@ -76,8 +76,7 @@ Project status
 
 **IMPORTANT:** This is work in progress. 
 
-1. There are still some things I'll take care of soon (esp. better failure messages).
-2. I extracted the code from one of my projects and rewrote the matchers from scratch test-first. Still, after the weekend I plan to actually use it to replace the 'legacy' matchers in my project; this will probably uncover some bugs and may make me add more functionality. *UPDATE: I'm working on it right now.*
+There are still some things I'll take care of soon (esp. better failure messages).
 
 If you have any comments regarding the code as it is now (I know it's a bit messy), please feel free to tweet [@MartinBilski](http://twitter.com/#!/MartinBilski)
 
