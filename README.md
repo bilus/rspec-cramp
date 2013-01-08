@@ -80,6 +80,11 @@ There are still some things I'll take care of soon (esp. better failure messages
 
 If you have any comments regarding the code as it is now (I know it's a bit messy), please feel free to tweet [@MartinBilski](http://twitter.com/#!/MartinBilski)
 
+Contributors
+------------
+
+[Ivan Fomichev](https://github.com/codeholic)
+
 Notes
 ----
 
