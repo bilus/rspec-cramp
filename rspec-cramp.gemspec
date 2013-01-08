@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.add_dependency('cramp', '~> 0.15')
   s.add_dependency('rack', '~> 1.3.2')
   s.add_dependency('eventmachine', '~> 1.0.0.beta.3')
-  s.add_dependency('http_router', '~> 0.10')
+  s.add_dependency('http_router', '>= 0.11')
   s.add_dependency('rspec', '~> 2.6')
   s.files = Dir['README.md', 'MIT-LICENSE', 'lib/**/*', 'spec/**/*']
   s.has_rdoc = false

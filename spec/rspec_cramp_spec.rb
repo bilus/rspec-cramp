@@ -132,10 +132,10 @@ module Cramp
         add('/raise_on_finish').to RaiseOnFinish
         add('/sse').to SseAction
         add('/sse_no_render').to SseNoRenderAction
-        add('/get_only').request_method('GET').to SuccessfulResponse
-        add('/post_only').request_method('POST').to SuccessfulResponse
-        add('/put_only').request_method('PUT').to SuccessfulResponse
-        add('/delete_only').request_method('DELETE').to SuccessfulResponse
+        get('/get_only').to SuccessfulResponse
+        post('/post_only').to SuccessfulResponse
+        put('/put_only').to SuccessfulResponse
+        delete('/delete_only').to SuccessfulResponse
         add('/request_headers').to RequestHeaders
         add('/request_params').to RequestParams
       end

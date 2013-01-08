@@ -1,6 +1,6 @@
 require "rubygems"
-require "cramp"
-require "rspec"
+require "bundler/setup"
+
 require "http_router"
 
 $:.unshift(File.join(File.dirname(__FILE__), "..", "lib"))
