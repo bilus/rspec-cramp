@@ -14,14 +14,18 @@ module RSpec
           stopping = false
           deferred_body = @body
           chunks = []
-          deferred_body.each do |chunk|
-            chunks << chunk unless stopping
+          check = lambda do
             if chunks.count >= max_chunks
               @body = chunks
               stopping = true
               block.call if block
               EM.next_tick { EM.stop }
             end            
+          end
+          check.call
+          deferred_body.each do |chunk|
+            chunks << chunk unless stopping
+            check.call
           end
         end
       end

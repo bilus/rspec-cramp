@@ -91,6 +91,10 @@ module Cramp
       end
     end
     
+    class SseNoRenderAction < Cramp::Action
+      self.transport = :sse
+    end
+
     class RequestHeaders < Cramp::Action
       on_start :render_request_headers
       def render_request_headers
@@ -127,6 +131,7 @@ module Cramp
         add('/raise_on_start').to RaiseOnStart
         add('/raise_on_finish').to RaiseOnFinish
         add('/sse').to SseAction
+        add('/sse_no_render').to SseNoRenderAction
         add('/get_only').request_method('GET').to SuccessfulResponse
         add('/post_only').request_method('POST').to SuccessfulResponse
         add('/put_only').request_method('PUT').to SuccessfulResponse
@@ -358,6 +363,11 @@ module Cramp
           it "should match with successful response" do
             send(method, "/sse", :max_chunks => 2).should respond_with :chunks => [/^data: Hello 1.*/, /^data: Hello 2.*/]
             send(method, "/sse", :max_chunks => 2).should_not respond_with :chunks => [/.*Incorrect 1.*/, /.*Incorrect 2.*/]
+          end
+
+          it "should not wait for body if it is skipped explicitly" do
+            lambda { send(method, "/sse_no_render", :max_chunks => 0) }.should_not raise_error Timeout::Error
+            send(method, "/sse_no_render", :max_chunks => 0).should respond_with :status => 200, :body => ""
           end
         end
         
